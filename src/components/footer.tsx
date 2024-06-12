@@ -1,18 +1,20 @@
-export const Footer = () => {
+import React from "react";
+
+import { cn } from "../lib/utils";
+import { ExternalLink } from "./external-link";
+
+export function FooterText({ className, ...props }: React.ComponentProps<"p">) {
   return (
-    <footer className="p-6 lg:fixed lg:bottom-0 lg:left-0">
-      <div>
-        visit{' '}
-        <a
-          href="https://waku.gg/"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-block underline"
-        >
-          waku.gg
-        </a>{' '}
-        to learn more
-      </div>
-    </footer>
+    <p
+      className={cn(
+        "px-2 text-center text-xs leading-normal text-muted-foreground",
+        className,
+      )}
+      {...props}
+    >
+      Open source AI chatbot built with{" "}
+      <ExternalLink href="https://nextjs.org">Next.js</ExternalLink> and{" "}
+      <ExternalLink href="https://sdk.vercel.ai">Vercel AI SDK</ExternalLink>.
+    </p>
   );
-};
+}
