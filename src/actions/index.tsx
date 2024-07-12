@@ -1,5 +1,5 @@
 "use server";
-import { createStreamableUI, getMutableAIState } from "ai/rsc";
+import { createAI, createStreamableUI, getMutableAIState } from "ai/rsc";
 import {
   BotCard,
   BotMessage,
@@ -20,8 +20,8 @@ import { z } from "zod";
 import { StocksSkeleton } from "../components/llm-stocks/stocks-skeleton";
 import { EventsSkeleton } from "../components/llm-stocks/events-skeleton";
 import { StockSkeleton } from "../components/llm-stocks/stock-skeleton";
-import { AI } from "../pages/action";
 import OpenAI from "openai";
+import type { ReactNode } from 'react'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
@@ -227,6 +227,7 @@ Besides that, you can also chat with users and do some calculations if needed.`,
 
     reply.done(
       <BotCard>
+        {/* @ts-expect-error */}
         <Stocks stocks={stocks} />
       </BotCard>,
     );
@@ -252,6 +253,7 @@ Besides that, you can also chat with users and do some calculations if needed.`,
 
     reply.done(
       <BotCard>
+        {/* @ts-expect-error */}
         <Events events={events} />
       </BotCard>,
     );
@@ -279,6 +281,7 @@ Besides that, you can also chat with users and do some calculations if needed.`,
 
       reply.done(
         <BotCard>
+          {/* @ts-expect-error */}
           <Stock name={symbol} price={price} delta={delta} />
         </BotCard>,
       );
@@ -345,3 +348,24 @@ Besides that, you can also chat with users and do some calculations if needed.`,
     display: reply.value,
   };
 }
+
+const initialAIState: {
+  role: "user" | "assistant" | "system" | "function";
+  content: string;
+  id?: string;
+  name?: string;
+}[] = [];
+
+const initialUIState: {
+  id: number;
+  display: ReactNode;
+}[] = [];
+
+export const AI = createAI({
+  actions: {
+    submitUserMessage,
+    confirmPurchase,
+  },
+  initialUIState,
+  initialAIState,
+});

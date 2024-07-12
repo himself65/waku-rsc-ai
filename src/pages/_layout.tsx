@@ -1,58 +1,33 @@
-import "../styles.css";
+import '../styles.css'
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
-import { Header } from "../components/header";
-import { createAI } from "ai/rsc";
-import { confirmPurchase, submitUserMessage } from "../actions";
-import { TooltipProvider } from "../components/ui/tooltip";
-
-const initialAIState: {
-  role: "user" | "assistant" | "system" | "function";
-  content: string;
-  id?: string;
-  name?: string;
-}[] = [];
-
-const initialUIState: {
-  id: number;
-  display: ReactNode;
-}[] = [];
-
-export const AI = createAI({
-  actions: {
-    submitUserMessage,
-    confirmPurchase,
-  },
-  initialUIState,
-  initialAIState,
-});
+import { Header } from '../components/header'
+import { TooltipProvider } from '../components/ui/tooltip'
 
 type RootLayoutProps = { children: ReactNode };
 
-export default async function RootLayout({ children }: RootLayoutProps) {
-  const data = await getData();
+export default async function RootLayout ({ children }: RootLayoutProps) {
+  const data = await getData()
   return (
     <div className="font-sans">
-      <meta property="description" content={data.description} />
-      <link rel="icon" type="image/png" href={data.icon} />
-      <AI>
-        <TooltipProvider>
-          <Header />
-          <main className="flex flex-col flex-1 bg-muted/50 dark:bg-background">
-            {children}
-          </main>
-        </TooltipProvider>
-      </AI>
+      <meta property="description" content={data.description}/>
+      <link rel="icon" type="image/png" href={data.icon}/>
+      <TooltipProvider>
+        <Header/>
+        <main className="flex flex-col flex-1 bg-muted/50 dark:bg-background">
+          {children}
+        </main>
+      </TooltipProvider>
     </div>
-  );
+  )
 }
 
 const getData = async () => {
   const data = {
-    description: "An internet website!",
-    icon: "/images/favicon.png",
-  };
+    description: 'An internet website!',
+    icon: '/images/favicon.png'
+  }
 
-  return data;
-};
+  return data
+}
