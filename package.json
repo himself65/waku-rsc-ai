@@ -28,7 +28,7 @@
     "react-textarea-autosize": "^8.5.3",
     "tailwind-merge": "^2.4.0",
     "usehooks-ts": "^3.1.0",
-    "waku": "link:/Users/himself65/Code/waku/packages/waku",
+    "waku": "^0.21.0-beta.2",
     "zod": "^3.23.8",
     "zod-to-json-schema": "^3.23.1"
   },
@@ -39,6 +39,7 @@
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.19",
     "tailwindcss": "3.4.4",
-    "typescript": "5.5.3"
+    "typescript": "5.5.3",
+    "vite": "^5.3.4"
   }
 }
