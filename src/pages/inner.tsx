@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { Suspense, useEffect, useRef, useState } from 'react'
 
 import { useUIState, useActions } from 'ai/rsc'
@@ -18,8 +18,9 @@ import { Button } from '../components/ui/button'
 import { ChatList } from '../components/chat-list'
 import { EmptyScreen } from '../components/empty-screen'
 import { AI } from '../actions'
+import { ErrorBoundary } from 'react-error-boundary'
 
-export const Inner = () => {
+const C = () => {
   const [messages, setMessages] = useUIState<typeof AI>()
   const { submitUserMessage } = useActions<typeof AI>()
   const [inputValue, setInputValue] = useState('')
@@ -177,5 +178,17 @@ export const Inner = () => {
         </div>
       </div>
     </div>
+  )
+}
+
+export const Inner = () => {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div>sorry, something went wrong</div>
+      }
+    >
+      <C/>
+    </ErrorBoundary>
   )
 }
