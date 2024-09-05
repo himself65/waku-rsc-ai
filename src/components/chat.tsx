@@ -5,7 +5,6 @@ import { useUIState, useActions } from 'ai/rsc'
 import { UserMessage } from '../components/llm-stocks/message'
 
 import { ChatScrollAnchor } from '../lib/hooks/chat-scroll-anchor'
-import { FooterText } from '../components/footer'
 import Textarea from 'react-textarea-autosize'
 import { useEnterSubmit } from '../lib/hooks/use-enter-submit'
 import {
@@ -17,10 +16,9 @@ import { IconArrowElbow, IconPlus } from '../components/ui/icons'
 import { Button } from '../components/ui/button'
 import { ChatList } from '../components/chat-list'
 import { EmptyScreen } from '../components/empty-screen'
-import { AI } from '../actions'
-import { ErrorBoundary } from 'react-error-boundary'
+import { AI } from '../ai/provider'
 
-const C = () => {
+export const Chat = () => {
   const [messages, setMessages] = useUIState<typeof AI>()
   const { submitUserMessage } = useActions<typeof AI>()
   const [inputValue, setInputValue] = useState('')
@@ -173,22 +171,9 @@ const C = () => {
                 </div>
               </div>
             </form>
-            <FooterText className="hidden sm:block"/>
           </div>
         </div>
       </div>
     </div>
-  )
-}
-
-export const Inner = () => {
-  return (
-    <ErrorBoundary
-      fallback={
-        <div>sorry, something went wrong</div>
-      }
-    >
-      <C/>
-    </ErrorBoundary>
   )
 }

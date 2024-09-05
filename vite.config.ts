@@ -1,16 +1,10 @@
-import type { UserConfig } from 'vite'
-
-/** @type {import('vite').UserConfig} */
 export default ({ mode }: { mode: string }) => {
   if (mode === 'development') {
     return {
       optimizeDeps: {
-        include: ['ai']
-      },
-      ssr: {
-        noExternal: ['ai']
+        exclude: ['ai/rsc'],
       }
-    } satisfies UserConfig
+    }
   }
   return {}
 };
