@@ -1,5 +1,5 @@
-'use server'
-import { createAI, createStreamableUI, getMutableAIState } from 'ai/rsc'
+"use server";
+import { createAI, createStreamableUI, getMutableAIState } from "ai/rsc";
 import {
   BotCard,
   BotMessage,
@@ -8,33 +8,33 @@ import {
   spinner,
   Stock,
   Stocks,
-  SystemMessage
-} from '../components/llm-stocks'
+  SystemMessage,
+} from "../components/llm-stocks";
 import {
   formatNumber,
   runAsyncFnWithoutBlocking,
   runOpenAICompletion,
-  sleep
-} from '../lib/utils/index'
-import { z } from 'zod'
-import { StocksSkeleton } from '../components/llm-stocks/stocks-skeleton'
-import { EventsSkeleton } from '../components/llm-stocks/events-skeleton'
-import { StockSkeleton } from '../components/llm-stocks/stock-skeleton'
-import OpenAI from 'openai'
-import type { ReactNode } from 'react'
+  sleep,
+} from "../lib/utils/index";
+import { z } from "zod";
+import { StocksSkeleton } from "../components/llm-stocks/stocks-skeleton";
+import { EventsSkeleton } from "../components/llm-stocks/events-skeleton";
+import { StockSkeleton } from "../components/llm-stocks/stock-skeleton";
+import OpenAI from "openai";
+import type { ReactNode } from "react";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ''
-})
+  apiKey: process.env.OPENAI_API_KEY || "",
+});
 
-export async function confirmPurchase (
+export async function confirmPurchase(
   symbol: string,
   price: number,
-  amount: number
+  amount: number,
 ) {
-  'use server'
+  "use server";
 
-  const aiState = getMutableAIState<typeof AI>()
+  const aiState = getMutableAIState<typeof AI>();
 
   const purchasing = createStreamableUI(
     <div className="inline-flex items-start gap-1 md:items-center">
@@ -42,14 +42,14 @@ export async function confirmPurchase (
       <p className="mb-2">
         Purchasing {amount} ${symbol}...
       </p>
-    </div>
-  )
+    </div>,
+  );
 
-  const systemMessage = createStreamableUI(null)
+  const systemMessage = createStreamableUI(null);
 
   runAsyncFnWithoutBlocking(async () => {
     // You can update the UI at any point.
-    await sleep(1000)
+    await sleep(1000);
 
     purchasing.update(
       <div className="inline-flex items-start gap-1 md:items-center">
@@ -57,70 +57,69 @@ export async function confirmPurchase (
         <p className="mb-2">
           Purchasing {amount} ${symbol}... working on it...
         </p>
-      </div>
-    )
+      </div>,
+    );
 
-    await sleep(1000)
+    await sleep(1000);
 
     purchasing.done(
       <div>
         <p className="mb-2">
-          You have successfully purchased {amount} ${symbol}. Total cost:{' '}
+          You have successfully purchased {amount} ${symbol}. Total cost:{" "}
           {formatNumber(amount * price)}
         </p>
-      </div>
-    )
+      </div>,
+    );
 
     systemMessage.done(
       <SystemMessage>
-        You have purchased {amount} shares of {symbol} at ${price}. Total cost
-        ={' '}
+        You have purchased {amount} shares of {symbol} at ${price}. Total cost ={" "}
         {formatNumber(amount * price)}.
-      </SystemMessage>
-    )
+      </SystemMessage>,
+    );
 
     aiState.done([
       ...aiState.get(),
       {
-        role: 'system',
+        role: "system",
         content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
           amount * price
-        }]`
-      }
-    ])
-  })
+        }]`,
+      },
+    ]);
+  });
 
   return {
     purchasingUI: purchasing.value,
     newMessage: {
       id: Date.now(),
-      display: systemMessage.value
-    }
-  }
+      display: systemMessage.value,
+    },
+  };
 }
 
-export async function submitUserMessage (content: string) {
-  'use server'
+export async function submitUserMessage(content: string) {
+  "use server";
 
-  const aiState = getMutableAIState<typeof AI>()
+  const aiState = getMutableAIState<typeof AI>();
   aiState.update([
     ...aiState.get(),
     {
-      role: 'user',
-      content
-    }
-  ])
+      role: "user",
+      content,
+    },
+  ]);
 
   const reply = createStreamableUI(
-    <BotMessage className="items-center">{spinner}</BotMessage>
-  )
+    <BotMessage className="items-center">{spinner}</BotMessage>,
+  );
 
   const completion = runOpenAICompletion(openai, {
-    model: 'gpt-3.5-turbo',
+    model: "gpt-3.5-turbo",
     stream: true,
     messages: [
       {
-        role: 'system',
+        role: "system",
         content: `\
 You are a stock trading conversation bot and you can help users buy stocks, step by step.
 You and the user can discuss stock prices and the user can adjust the amount of stocks they want to buy, or place an order, in the UI.
@@ -135,183 +134,190 @@ If you want to show trending stocks, call \`list_stocks\`.
 If you want to show events, call \`get_events\`.
 If the user wants to sell stock, or complete another impossible task, respond that you are a demo and cannot do that.
 
-Besides that, you can also chat with users and do some calculations if needed.`
+Besides that, you can also chat with users and do some calculations if needed.`,
       },
       ...aiState.get().map((info: any) => ({
         role: info.role,
         content: info.content,
-        name: info.name
-      }))
+        name: info.name,
+      })),
     ],
     functions: [
       {
-        name: 'show_stock_price',
+        name: "show_stock_price",
         description:
-          'Get the current stock price of a given stock or currency. Use this to show the price to the user.',
+          "Get the current stock price of a given stock or currency. Use this to show the price to the user.",
         parameters: z.object({
-          symbol: z.string().describe(
-            'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-          ),
-          price: z.number().describe('The price of the stock.'),
-          delta: z.number().describe('The change in price of the stock')
-        })
+          symbol: z
+            .string()
+            .describe(
+              "The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.",
+            ),
+          price: z.number().describe("The price of the stock."),
+          delta: z.number().describe("The change in price of the stock"),
+        }),
       },
       {
-        name: 'show_stock_purchase_ui',
+        name: "show_stock_purchase_ui",
         description:
-          'Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.',
+          "Show price and the UI to purchase a stock or currency. Use this if the user wants to purchase a stock or currency.",
         parameters: z.object({
-          symbol: z.string().describe(
-            'The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.'
-          ),
-          price: z.number().describe('The price of the stock.'),
-          numberOfShares: z.number().describe(
-            'The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.'
-          )
-        })
+          symbol: z
+            .string()
+            .describe(
+              "The name or symbol of the stock or currency. e.g. DOGE/AAPL/USD.",
+            ),
+          price: z.number().describe("The price of the stock."),
+          numberOfShares: z
+            .number()
+            .describe(
+              "The **number of shares** for a stock or currency to purchase. Can be optional if the user did not specify it.",
+            ),
+        }),
       },
       {
-        name: 'list_stocks',
-        description: 'List three imaginary stocks that are trending.',
+        name: "list_stocks",
+        description: "List three imaginary stocks that are trending.",
         parameters: z.object({
           stocks: z.array(
             z.object({
-              symbol: z.string().describe('The symbol of the stock'),
-              price: z.number().describe('The price of the stock'),
-              delta: z.number().describe('The change in price of the stock')
-            })
-          )
-        })
+              symbol: z.string().describe("The symbol of the stock"),
+              price: z.number().describe("The price of the stock"),
+              delta: z.number().describe("The change in price of the stock"),
+            }),
+          ),
+        }),
       },
       {
-        name: 'get_events',
+        name: "get_events",
         description:
-          'List funny imaginary events between user highlighted dates that describe stock activity.',
+          "List funny imaginary events between user highlighted dates that describe stock activity.",
         parameters: z.object({
           events: z.array(
             z.object({
-              date: z.string().
-                describe('The date of the event, in ISO-8601 format'),
-              headline: z.string().describe('The headline of the event'),
-              description: z.string().describe('The description of the event')
-            })
-          )
-        })
-      }
+              date: z
+                .string()
+                .describe("The date of the event, in ISO-8601 format"),
+              headline: z.string().describe("The headline of the event"),
+              description: z.string().describe("The description of the event"),
+            }),
+          ),
+        }),
+      },
     ],
-    temperature: 0
-  })
+    temperature: 0,
+  });
 
   completion.onTextContent((content: string, isFinal: boolean) => {
-    reply.update(<BotMessage>{content}</BotMessage>)
+    reply.update(<BotMessage>{content}</BotMessage>);
     if (isFinal) {
-      reply.done()
-      aiState.done([...aiState.get(), { role: 'assistant', content }])
+      reply.done();
+      aiState.done([...aiState.get(), { role: "assistant", content }]);
     }
-  })
+  });
 
-  completion.onFunctionCall('list_stocks', async ({ stocks }) => {
+  completion.onFunctionCall("list_stocks", async ({ stocks }) => {
     reply.update(
       <BotCard>
-        <StocksSkeleton/>
-      </BotCard>
-    )
+        <StocksSkeleton />
+      </BotCard>,
+    );
 
-    await sleep(1000)
+    await sleep(1000);
 
     reply.done(
       <BotCard>
         {/* @ts-expect-error */}
-        <Stocks stocks={stocks}/>
-      </BotCard>
-    )
+        <Stocks stocks={stocks} />
+      </BotCard>,
+    );
 
     aiState.done([
       ...aiState.get(),
       {
-        role: 'function',
-        name: 'list_stocks',
-        content: JSON.stringify(stocks)
-      }
-    ])
-  })
+        role: "function",
+        name: "list_stocks",
+        content: JSON.stringify(stocks),
+      },
+    ]);
+  });
 
-  completion.onFunctionCall('get_events', async ({ events }) => {
+  completion.onFunctionCall("get_events", async ({ events }) => {
     reply.update(
       <BotCard>
-        <EventsSkeleton/>
-      </BotCard>
-    )
+        <EventsSkeleton />
+      </BotCard>,
+    );
 
-    await sleep(1000)
+    await sleep(1000);
 
     reply.done(
       <BotCard>
         {/* @ts-expect-error */}
-        <Events events={events}/>
-      </BotCard>
-    )
+        <Events events={events} />
+      </BotCard>,
+    );
 
     aiState.done([
       ...aiState.get(),
       {
-        role: 'function',
-        name: 'get_events',
-        content: JSON.stringify(events)
-      }
-    ])
-  })
+        role: "function",
+        name: "get_events",
+        content: JSON.stringify(events),
+      },
+    ]);
+  });
 
   completion.onFunctionCall(
-    'show_stock_price',
+    "show_stock_price",
     async ({ symbol, price, delta }) => {
       reply.update(
         <BotCard>
-          <StockSkeleton/>
-        </BotCard>
-      )
+          <StockSkeleton />
+        </BotCard>,
+      );
 
-      await sleep(1000)
+      await sleep(1000);
 
       reply.done(
         <BotCard>
           {/* @ts-expect-error */}
-          <Stock name={symbol} price={price} delta={delta}/>
-        </BotCard>
-      )
+          <Stock name={symbol} price={price} delta={delta} />
+        </BotCard>,
+      );
 
       aiState.done([
         ...aiState.get(),
         {
-          role: 'function',
-          name: 'show_stock_price',
-          content: `[Price of ${symbol} = ${price}]`
-        }
-      ])
-    }
-  )
+          role: "function",
+          name: "show_stock_price",
+          content: `[Price of ${symbol} = ${price}]`,
+        },
+      ]);
+    },
+  );
 
   completion.onFunctionCall(
-    'show_stock_purchase_ui',
+    "show_stock_purchase_ui",
     ({ symbol, price, numberOfShares = 100 }) => {
       if (numberOfShares <= 0 || numberOfShares > 1000) {
-        reply.done(<BotMessage>Invalid amount</BotMessage>)
+        reply.done(<BotMessage>Invalid amount</BotMessage>);
         aiState.done([
           ...aiState.get(),
           {
-            role: 'function',
-            name: 'show_stock_purchase_ui',
-            content: `[Invalid amount]`
-          }
-        ])
-        return
+            role: "function",
+            name: "show_stock_purchase_ui",
+            content: `[Invalid amount]`,
+          },
+        ]);
+        return;
       }
 
       reply.done(
         <>
           <BotMessage>
-            Sure!{' '}
-            {typeof numberOfShares === 'number'
+            Sure!{" "}
+            {typeof numberOfShares === "number"
               ? `Click the button below to purchase ${numberOfShares} shares of $${symbol}:`
               : `How many $${symbol} would you like to purchase?`}
           </BotMessage>
@@ -322,44 +328,44 @@ Besides that, you can also chat with users and do some calculations if needed.`
               price={+price}
             />
           </BotCard>
-        </>
-      )
+        </>,
+      );
       aiState.done([
         ...aiState.get(),
         {
-          role: 'function',
-          name: 'show_stock_purchase_ui',
+          role: "function",
+          name: "show_stock_purchase_ui",
           content: `[UI for purchasing ${numberOfShares} shares of ${symbol}. Current price = ${price}, total cost = ${
             numberOfShares * price
-          }]`
-        }
-      ])
-    }
-  )
+          }]`,
+        },
+      ]);
+    },
+  );
 
   return {
     id: Date.now(),
-    display: reply.value
-  }
+    display: reply.value,
+  };
 }
 
 const initialAIState: {
-  role: 'user' | 'assistant' | 'system' | 'function';
+  role: "user" | "assistant" | "system" | "function";
   content: string;
   id?: string;
   name?: string;
-}[] = []
+}[] = [];
 
 const initialUIState: {
   id: number;
   display: ReactNode;
-}[] = []
+}[] = [];
 
 export const AI = createAI({
   actions: {
     submitUserMessage,
-    confirmPurchase
+    confirmPurchase,
   },
   initialUIState,
-  initialAIState
-})
+  initialAIState,
+});
