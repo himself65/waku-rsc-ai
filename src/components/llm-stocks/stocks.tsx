@@ -1,7 +1,7 @@
 "use client";
 
 import { useActions, useUIState } from "ai/rsc";
-import type { AI } from '../../actions'
+import type { AI } from "../../actions";
 
 export function Stocks({ stocks }: { stocks: any[] }) {
   const [, setMessages] = useUIState<typeof AI>();
